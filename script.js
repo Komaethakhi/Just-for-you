@@ -665,6 +665,7 @@ class CinematicDirector {
         this.unlockedCardsList = new Set();
         
         this.bindEvents();
+        this.hud.classList.remove('hidden');
     }
 
     bindEvents() {
@@ -743,11 +744,8 @@ class CinematicDirector {
         this.currentStageIdx = stageIdx;
         const stage = STAGE_FLOW[stageIdx];
         
-        if (stage.id === 'scene-welcome') {
-            this.hud.classList.add('hidden');
-        } else {
-            this.hud.classList.remove('hidden');
-        }
+        // Make HUD controls visible globally, including on the welcome stage
+        this.hud.classList.remove('hidden');
 
         this.hideSubtitle();
 

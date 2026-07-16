@@ -1433,6 +1433,27 @@ h1, h2, h3 {
         height: 130px;
     }
     
+    .hud-controls {
+        top: 12px;
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 6px 12px;
+        gap: 6px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+    
+    .hud-controls.hidden {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+    }
+    
+    .hud-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 0.95rem;
+    }
+    
     .epilogue-panel {
         position: relative;
         padding: 20px;
