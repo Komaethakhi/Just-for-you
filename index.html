@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Just For You ❤️ | A Tanglish Cinematic Surpise</title>
+    
+    <!-- Google Fonts: Outfit and Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Local Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ========================================== -->
+    <!-- GLOBAL AMBIENT LAYER & OVERLAYS -->
+    <!-- ========================================== -->
+    <div id="ambient-backdrop" class="ambient-bg"></div>
+    <canvas id="starfield-canvas"></canvas>
+    <canvas id="particle-overlay-canvas"></canvas>
+
+    <!-- Global Subtitles display -->
+    <div id="subtitle-container" class="subtitle-overlay">
+        <p id="subtitle-text"></p>
+    </div>
+
+    <!-- HUD Playback Controls -->
+    <div id="cinematic-hud" class="hud-controls hidden">
+        <button id="hud-prev" class="hud-btn" title="Previous Stage">
+            <i class="fa-solid fa-backward-step"></i>
+        </button>
+        <button id="hud-play-pause" class="hud-btn" title="Pause / Play">
+            <i class="fa-solid fa-pause"></i>
+        </button>
+        <button id="hud-next" class="hud-btn" title="Skip Forward">
+            <i class="fa-solid fa-forward-step"></i>
+        </button>
+        <div class="hud-divider"></div>
+        <button id="hud-audio-toggle" class="hud-btn sound-playing" title="Toggle Sound">
+            <i class="fa-solid fa-volume-high"></i>
+            <span class="sound-waves">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </span>
+        </button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- STAGE 0: NAME VERIFICATION WELCOME -->
+    <!-- ========================================== -->
+    <section id="scene-welcome" class="scene active-scene">
+        <div class="welcome-box glass-panel">
+            <div class="heart-pulse">❤️</div>
+            <h1 class="welcome-title">Just For You</h1>
+            <p class="welcome-desc">
+                Oru beautiful cinematic journey unakaga wait pannudhu.<br>
+                Please wear your headphones for the best experience.
+            </p>
+            
+            <div class="input-group">
+                <input type="text" id="visitor-name" placeholder="Enter your name..." autocomplete="off">
+                <small id="welcome-error" class="error-msg"></small>
+            </div>
+            
+            <div class="button-group">
+                <button id="btn-unlock-sound" class="btn btn-primary">
+                    ✨ Unlock My Surprise 🎧
+                </button>
+                <button id="btn-unlock-muted" class="btn btn-secondary">
+                    Unlock Muted 🔇
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- STAGE 1: THE TYPING LETTER (TANGLISH) -->
+    <!-- ========================================== -->
+    <section id="scene-letter" class="scene">
+        <div class="letter-box glass-panel">
+            <div class="letter-header">
+                <span class="stamp">💌</span>
+                <h2 id="letter-title">Dear Rajesh...</h2>
+            </div>
+            <div class="letter-scroll-wrapper">
+                <p id="letter-body-text"></p>
+            </div>
+            <div class="letter-footer">
+                <button id="btn-close-letter" class="btn btn-primary">
+                    Open Gift Box 🎁
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- STAGE 2: THE GIFT BOX & SCATTERED CARDS -->
+    <!-- ========================================== -->
+    <section id="scene-gift" class="scene">
+        <div class="gift-playground">
+            
+            <!-- 3D style Gift Box -->
+            <div class="gift-box-wrapper" id="target-gift-box">
+                <div class="gift-glow-halo"></div>
+                <!-- Box Lid -->
+                <div class="box-lid">
+                    <div class="lid-ribbon-v"></div>
+                    <div class="lid-ribbon-h"></div>
+                    <div class="box-bow"><span></span></div>
+                </div>
+                <!-- Box Base -->
+                <div class="box-base">
+                    <div class="base-ribbon-v"></div>
+                    <div class="inner-glowing-light"></div>
+                </div>
+                <p class="gift-box-label">🎁 Click the Box</p>
+            </div>
+
+            <!-- Scattered Polaroid Cards -->
+            <div class="polaroids-container">
+                <!-- Dark Backdrop for Zoomed Polaroid Cards (Placed inside container for stacking context) -->
+                <div id="card-backdrop" class="card-backdrop-overlay"></div>
+
+                <!-- Card 1: Bike -->
+                <div class="polaroid-card" id="polaroid-1" data-dream="bike">
+                    <div class="card-grey-screen">
+                        <i class="fa-solid fa-lock card-lock"></i>
+                        <span>Reveal Dream</span>
+                    </div>
+                    <div class="card-content">
+                        <img src="assets/images/Raj's Dream Bike.png" alt="Bike">
+                        <p class="card-quote">"Inniku idhu oru dream dhaan... seekiram idhu un daily ride aagum. ❤️"</p>
+                        <button class="btn-close-card">Place Down ↩</button>
+                    </div>
+                </div>
+                
+                <!-- Card 2: Car -->
+                <div class="polaroid-card" id="polaroid-2" data-dream="car">
+                    <div class="card-grey-screen">
+                        <i class="fa-solid fa-lock card-lock"></i>
+                        <span>Reveal Dream</span>
+                    </div>
+                    <div class="card-content">
+                        <img src="assets/images/Raj's Dream Car.png" alt="Car">
+                        <p class="card-quote">"Konjam late aagalam... aana steering wheel un kai la dhaan irukkum. 🚗"</p>
+                        <button class="btn-close-card">Place Down ↩</button>
+                    </div>
+                </div>
+                
+                <!-- Card 3: Mobile -->
+                <div class="polaroid-card" id="polaroid-3" data-dream="mobile">
+                    <div class="card-grey-screen">
+                        <i class="fa-solid fa-lock card-lock"></i>
+                        <span>Reveal Dream</span>
+                    </div>
+                    <div class="card-content">
+                        <img src="assets/images/ps5-pro.png" alt="Tech">
+                        <p class="card-quote">"Nee aasai patta console oru naal un kai la irukkum. Reward kandippa kidaikkum. 🎮✨"</p>
+                        <button class="btn-close-card">Place Down ↩</button>
+                    </div>
+                </div>
+                
+                <!-- Card 4: Small Success -->
+                <div class="polaroid-card" id="polaroid-4" data-dream="small-success">
+                    <div class="card-grey-screen">
+                        <i class="fa-solid fa-lock card-lock"></i>
+                        <span>Reveal Dream</span>
+                    </div>
+                    <div class="card-content">
+                        <img src="assets/images/Raj MT 7500.png" alt="Trades">
+                        <p class="card-quote">"Ovvoru small success-um un future-ku oru strong foundation. 📈"</p>
+                        <button class="btn-close-card">Place Down ↩</button>
+                    </div>
+                </div>
+
+                <!-- Card 5: Big Success -->
+                <div class="polaroid-card" id="polaroid-5" data-dream="big-success">
+                    <div class="card-grey-screen">
+                        <i class="fa-solid fa-lock card-lock"></i>
+                        <span>Reveal Dream</span>
+                    </div>
+                    <div class="card-content">
+                        <img src="assets/images/Raj 15K PT.png" alt="Milestones">
+                        <p class="card-quote">"Indha smile-ku pinnadi irukkura struggle unakku dhaan theriyum. Keep going! 🏆"</p>
+                        <button class="btn-close-card">Place Down ↩</button>
+                    </div>
+                </div>
+
+                <!-- Card 6: House -->
+                <div class="polaroid-card" id="polaroid-6" data-dream="house">
+                    <div class="card-grey-screen">
+                        <i class="fa-solid fa-lock card-lock"></i>
+                        <span>Reveal Dream</span>
+                    </div>
+                    <div class="card-content">
+                        <img src="assets/images/Luxury house.jpeg" alt="House">
+                        <p class="card-quote">"Oru naal 'Welcome Home' nu sollumbodhu, ellam worth-nu thonum. 🏡❤️"</p>
+                        <button class="btn-close-card">Place Down ↩</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proceed Button (Only shown when all 6 are unlocked) -->
+            <button id="btn-gift-proceed" class="btn btn-primary float-proceed-btn hidden-btn">
+                Continue Journey <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- STAGE 3: EMOTION CHANGER SPACE -->
+    <!-- ========================================== -->
+    <section id="scene-emotion" class="scene">
+        <div class="emotion-changer-card glass-panel">
+            <div class="breathing-ring-outer">
+                <div class="breathing-ring-inner"></div>
+            </div>
+            <h2 class="emotion-prompt">Deep-ah breath in and out pannunga...</h2>
+            <p class="emotion-subtext">Emotion-ah light-ah change pannuvom. Let the peace settle in...</p>
+        </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- STAGE 4: EMPOWERING MOTIVATION CARD -->
+    <!-- ========================================== -->
+    <section id="scene-motivation" class="scene">
+        <div class="motivation-box glass-panel">
+            <div class="motivation-glow"></div>
+            <i class="fa-solid fa-bolt-lightning bolt-icon"></i>
+            <h2>Feeling Tired? ❤️</h2>
+            <p class="motivation-text-tanglish">
+                Life sila neram romba unfair-ah theriyalaam. Ellaame tholviyaa irukura maadhiri thonum.
+                Aana marandhudadhingaah... Oru periya success story-ku pinnadi dhaan romba periya struggles irukkum.
+                Neenga romba strong-ana aal. Never feel down mahh! Believe in yourself.
+            </p>
+            <button id="btn-start-story" class="btn btn-primary">
+                Oru Kutty Story 🎬
+            </button>
+        </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- STAGE 5: STORY - SCENE 1 (BOY ON CYCLE) -->
+    <!-- ========================================== -->
+    <section id="scene-story-boy" class="scene">
+        <div class="story-stage">
+            <div class="sunset-sky"></div>
+            <div class="boy-road"></div>
+            <div class="boy-actor-box">
+                <img src="assets/images/boy.png" id="actor-boy-cycle" alt="Young Boy">
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- STAGE 6: STORY - SCENE 2 (ADULT RESPONSIBILITIES & DREAMS) -->
+    <!-- ========================================== -->
+    <section id="scene-story-adult" class="scene">
+        <div class="story-stage dark-storm-bg">
+            <div class="rain-curtain"></div>
+            
+            <!-- Character spotlight -->
+            <div class="adult-spotlight-wrapper">
+                <div class="weary-shadow-glow"></div>
+                <img src="assets/images/adult-raj.png" id="actor-raj-heavy" class="adult-actor" alt="Adult Raj">
+            </div>
+
+            <!-- Floating Responsibilities Words -->
+            <div class="responsibility-words-container">
+                <div class="resp-word w1">Family responsibilities 🏠</div>
+                <div class="resp-word w2">Financial Stress 💸</div>
+                <div class="resp-word w3">Disappointments ❌</div>
+                <div class="resp-word w4">Mental Pressure 🧠</div>
+                <div class="resp-word w5">Thanimai & Loneliness 🌌</div>
+            </div>
+
+            <!-- Floating Glowing Dreams in background -->
+            <div class="bg-dreams-container">
+                <img src="assets/images/Raj's Dream Bike.png" class="bg-dream bd1" alt="Dream Bike">
+                <img src="assets/images/Raj's Dream Car.png" class="bg-dream bd2" alt="Dream Car">
+                <img src="assets/images/Luxury house.jpeg" class="bg-dream bd3" alt="Dream House">
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- STAGE 7: STORY - SCENE 3 (TRIUMPH & EPILOGUE) -->
+    <!-- ========================================== -->
+    <section id="scene-story-success" class="scene">
+        <div class="triumph-stage">
+            <div class="golden-ray-sun"></div>
+            
+            <div class="success-actor-wrapper">
+                <div class="golden-halo-sparkle"></div>
+                <img src="assets/images/adult-raj.png" id="actor-raj-triumph" class="triumph-actor" alt="Raj Triumphant">
+            </div>
+
+            <div class="success-showcase">
+                <div class="success-bubble sb1">
+                    <img src="assets/images/Raj's Dream Bike.png" alt="Bike">
+                </div>
+                <div class="success-bubble sb2">
+                    <img src="assets/images/Raj's Dream Car.png" alt="Car">
+                </div>
+                <div class="success-bubble sb3">
+                    <img src="assets/images/Luxury house.jpeg" alt="House">
+                </div>
+                <div class="success-bubble sb4">
+                    <img src="assets/images/Raj 15K PT.png" alt="Career Milestone">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- STAGE 8: STORY - SCENE 4 (EPILOGUE CREDITS) -->
+    <!-- ========================================== -->
+    <section id="scene-story-epilogue" class="scene">
+        <div class="epilogue-panel">
+            
+            <!-- Staircase of Perseverance -->
+            <div class="staircase-container" id="perseverance-staircase">
+                <div class="staircase-steps">
+                    <div class="stair-step step-1"><span>Consistency</span></div>
+                    <div class="stair-step step-2"><span>Patience</span></div>
+                    <div class="stair-step step-3"><span>Focus</span></div>
+                    <div class="stair-step step-4"><span>Hard Work</span></div>
+                    <div class="stair-step step-5 top-platform"><span>Victory 🏆</span></div>
+                </div>
+                <div class="stair-actor-box" id="actor-staircase-raj-box">
+                    <img src="assets/images/adult-raj.png" id="stair-actor-raj" alt="Raj Climbing">
+                    <div id="golden-trophy-hand" class="trophy-glow">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Credits Details -->
+            <div class="epilogue-credits">
+                <p class="epilogue-line l1">Ovvoru periya dream-um oru chinna step-la dhaan start aagum...</p>
+                <p class="epilogue-line l2">Idhu end illa...</p>
+                <h1 class="epilogue-line l3">Idhu oru pudhiya aarambam. Raj❤️</h1>
+                <div class="pulsing-glow-heart">❤️</div>
+                
+                <button id="btn-final-replay" class="btn btn-primary">
+                    <i class="fa-solid fa-rotate-left"></i> Replay Journey
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- AUDIO ELEMENTS -->
+    <!-- ========================================== -->
+    <audio id="sfx-bike" preload="auto">
+        <source src="assets/audio/bike.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- ========================================== -->
+    <!-- SCRIPTS -->
+    <!-- ========================================== -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

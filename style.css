@@ -1,0 +1,1513 @@
+/* ==================================================
+   PREMIUM CINEMATIC DESIGN SYSTEM
+   ================================================== */
+:root {
+    --bg-base: #03050c;
+    --bg-aurora-1: rgba(90, 80, 255, 0.15);
+    --bg-aurora-2: rgba(255, 60, 150, 0.12);
+    --gold: #ffd700;
+    --gold-bright: #ffea75;
+    --gold-dark: #cc9900;
+    --gold-glow: rgba(255, 215, 0, 0.38);
+    --text-white: #f5f6fa;
+    --text-gray: #a5a9c5;
+    --text-muted: #5f6580;
+    --accent-red: #ff3c70;
+    --accent-blue: #38b0ff;
+    
+    --glass-bg: rgba(8, 12, 28, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-shadow: 0 35px 70px rgba(0, 0, 0, 0.7);
+    
+    --transition-smooth: 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+    --transition-fast: 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* ==================================================
+   GLOBAL RESET & ENVIRONMENT SETUP
+   ================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    background-color: transparent; /* transparent to let ambient-bg show */
+    color: var(--text-white);
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    overflow: hidden;
+    line-height: 1.5;
+}
+
+/* Ambient Backdrops */
+.ambient-bg {
+    position: fixed;
+    inset: 0;
+    background: 
+        radial-gradient(circle at 10% 20%, var(--bg-aurora-1) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, var(--bg-aurora-2) 0%, transparent 40%),
+        linear-gradient(180deg, #03050c 0%, #0a0d1e 50%, #03050c 100%);
+    background-size: 200% 200%;
+    z-index: 1; /* Positive stack order: base */
+    transition: background 3.5s ease-in-out;
+}
+
+#starfield-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 2; /* Positive stack order: above backdrop, below scene panels */
+    pointer-events: none;
+}
+
+#particle-overlay-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+}
+
+/* Subtitle Display */
+.subtitle-overlay {
+    position: fixed;
+    bottom: 9%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 85%;
+    max-width: 850px;
+    text-align: center;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+#subtitle-text {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(1.3rem, 2.4vw, 2.1rem);
+    font-weight: 500;
+    line-height: 1.55;
+    color: var(--text-white);
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.9), 0 0 20px rgba(255, 255, 255, 0.15);
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+#subtitle-text.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* HUD Controls */
+.hud-controls {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 40px;
+    background: rgba(4, 6, 16, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 9999;
+    transition: opacity var(--transition-smooth), transform var(--transition-smooth);
+}
+
+.hud-controls.hidden {
+    opacity: 0;
+    transform: translateY(-20px);
+    pointer-events: none;
+}
+
+.hud-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--text-gray);
+    font-size: 1.05rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-fast);
+    position: relative;
+}
+
+.hud-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-white);
+}
+
+.hud-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--glass-border);
+    margin: 0 4px;
+}
+
+#hud-audio-toggle {
+    color: var(--gold);
+}
+
+.sound-waves {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 12px;
+    position: absolute;
+    bottom: 7px;
+    right: 7px;
+}
+
+.sound-waves span {
+    width: 1.5px;
+    background-color: var(--gold);
+    border-radius: 2px;
+    animation: musicBounce 1s ease infinite alternate;
+    transform-origin: bottom;
+    display: none;
+}
+
+.sound-playing .sound-waves span {
+    display: block;
+}
+
+.sound-waves span:nth-child(1) { height: 40%; animation-delay: 0.1s; }
+.sound-waves span:nth-child(2) { height: 100%; animation-delay: 0.3s; }
+.sound-waves span:nth-child(3) { height: 60%; animation-delay: 0.5s; }
+.sound-waves span:nth-child(4) { height: 80%; animation-delay: 0.2s; }
+
+/* ==================================================
+   GENERIC CLASSES
+   ================================================== */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(24px) saturate(120%);
+    -webkit-backdrop-filter: blur(24px) saturate(120%);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    border-radius: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.glass-panel::before {
+    content: "";
+    position: absolute;
+    top: -150%;
+    left: -150%;
+    width: 300%;
+    height: 300%;
+    background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(255, 255, 255, 0.03),
+        transparent
+    );
+    transform: rotate(35deg);
+    animation: shimmerSlide 8s linear infinite;
+    pointer-events: none;
+}
+
+.scene {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 10;
+    transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1), visibility 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+    overflow: hidden;
+}
+
+.scene.active-scene {
+    opacity: 1;
+    visibility: visible;
+    z-index: 20;
+}
+
+h1, h2, h3 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.btn {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 12px 30px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: var(--transition-fast);
+    outline: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #ffe047 0%, #ffd700 100%);
+    color: #040714;
+    box-shadow: 0 8px 20px rgba(255, 215, 0, 0.2);
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(255, 215, 0, 0.35);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-white);
+    border: 1px solid var(--glass-border);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-3px);
+}
+
+.btn:active {
+    transform: translateY(-1px);
+}
+
+/* ==================================================
+   STAGE 0: NAME VERIFICATION WELCOME
+   ================================================== */
+.welcome-box {
+    width: min(480px, 90vw);
+    padding: 45px 30px;
+    text-align: center;
+}
+
+.heart-pulse {
+    font-size: 3.2rem;
+    color: var(--accent-red);
+    margin-bottom: 12px;
+    animation: heartbeat 1.3s infinite;
+}
+
+.welcome-title {
+    font-size: 2.6rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #ffffff 0%, #a2a8c5 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+}
+
+.welcome-desc {
+    color: var(--text-gray);
+    font-size: 0.98rem;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.input-group {
+    width: 100%;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-white);
+    font-family: inherit;
+    font-size: 1.1rem;
+    font-weight: 500;
+    outline: none;
+    text-align: center;
+    transition: var(--transition-fast);
+}
+
+.input-group input:focus {
+    border-color: var(--gold);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.12);
+}
+
+.error-msg {
+    display: block;
+    margin-top: 8px;
+    color: #ff5f78;
+    font-size: 0.85rem;
+    font-weight: 500;
+    min-height: 18px;
+}
+
+.welcome-box.shake {
+    animation: errorShake 0.4s ease;
+}
+
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* ==================================================
+   STAGE 1: THE TYPING LETTER (TANGLISH)
+   ================================================== */
+.letter-box {
+    width: min(650px, 92vw);
+    max-height: 80vh;
+    padding: 35px;
+    display: flex;
+    flex-direction: column;
+}
+
+.letter-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.stamp {
+    font-size: 2.2rem;
+}
+
+#letter-title {
+    font-size: 1.6rem;
+    color: var(--gold-bright);
+}
+
+.letter-scroll-wrapper {
+    overflow-y: auto;
+    max-height: 45vh;
+    padding-right: 8px;
+    margin-bottom: 25px;
+}
+
+.letter-scroll-wrapper::-webkit-scrollbar {
+    width: 4px;
+}
+
+.letter-scroll-wrapper::-webkit-scrollbar-thumb {
+    background: var(--glass-border);
+    border-radius: 10px;
+}
+
+#letter-body-text {
+    font-family: inherit;
+    font-size: 1.05rem;
+    line-height: 1.85;
+    color: #e5e7f0;
+    white-space: pre-wrap;
+}
+
+.letter-footer {
+    display: flex;
+    justify-content: center;
+}
+
+/* ==================================================
+   STAGE 2: THE GIFT BOX & SCATTERED CARDS
+   ================================================== */
+.gift-playground {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Dark Backdrop for zoomed cards */
+.card-backdrop-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(4, 5, 12, 0.78);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 50; /* Above normal cards (10), below zoomed card (200) */
+    transition: opacity 0.5s ease;
+}
+
+.card-backdrop-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 3D Gift Box */
+.gift-box-wrapper {
+    width: 250px;
+    height: 230px;
+    position: relative;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    z-index: 100;
+    transition: transform var(--transition-fast);
+}
+
+.gift-box-wrapper:hover {
+    transform: translateY(-8px) scale(1.03);
+}
+
+.gift-glow-halo {
+    position: absolute;
+    inset: -50px;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.25) 0%, transparent 70%);
+    filter: blur(15px);
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    z-index: -1;
+}
+
+.gift-box-wrapper:hover .gift-glow-halo {
+    opacity: 1;
+}
+
+.box-lid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: linear-gradient(135deg, #1b3cc7 0%, #0d228c 100%);
+    border-radius: 12px;
+    transform-origin: bottom center;
+    z-index: 10;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+}
+
+.lid-ribbon-v {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 100%;
+    background: #ffcf40;
+}
+
+.lid-ribbon-h {
+    position: absolute;
+    top: 20px;
+    width: 100%;
+    height: 20px;
+    background: #ffcf40;
+}
+
+.box-bow {
+    position: absolute;
+    left: 50%;
+    top: -24px;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 35px;
+}
+
+.box-bow::before, .box-bow::after {
+    content: "";
+    position: absolute;
+    width: 24px;
+    height: 30px;
+    background: #ff2965;
+    border-radius: 50% 50% 10% 10%;
+}
+
+.box-bow::before { left: 0; transform: rotate(-25deg); }
+.box-bow::after { right: 0; transform: rotate(25deg); }
+.box-bow span {
+    position: absolute;
+    left: 50%;
+    top: 10px;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 22px;
+    background: #a3002f;
+    border-radius: 8px;
+}
+
+.box-base {
+    position: absolute;
+    bottom: 0;
+    left: 10px;
+    width: 230px;
+    height: 170px;
+    background: linear-gradient(135deg, #142db3 0%, #081669 100%);
+    border-radius: 0 0 16px 16px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+.base-ribbon-v {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 100%;
+    background: #ffcf40;
+}
+
+.inner-glowing-light {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 140px;
+    height: 140px;
+    background: radial-gradient(circle, rgba(255,255,200,0.9) 0%, rgba(255,215,0,0.1) 80%);
+    filter: blur(12px);
+    opacity: 0;
+}
+
+.gift-box-label {
+    position: absolute;
+    bottom: -32px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-gray);
+    letter-spacing: 0.05em;
+    animation: arrowPulse 1.5s infinite;
+}
+
+/* Scattered Polaroid Cards */
+.polaroids-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100; /* Stacking context allows backdrop and cards to layer cleanly */
+}
+
+.polaroid-card {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 210px;
+    background: #ffffff;
+    padding: 10px 10px 14px 10px;
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2);
+    pointer-events: none;
+    z-index: 10; /* Below backdrop (50) */
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), box-shadow var(--transition-fast);
+}
+
+.polaroid-card.active-reveal {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.polaroid-card:hover {
+    z-index: 140 !important;
+    box-shadow: 0 20px 45px rgba(0,0,0,0.55);
+}
+
+.polaroid-card.zoomed {
+    z-index: 200 !important; /* Flies above backdrop (50) */
+    box-shadow: 0 25px 65px rgba(0,0,0,0.85);
+    cursor: default;
+}
+
+.card-grey-screen {
+    position: absolute;
+    inset: 0;
+    background: rgba(22, 24, 32, 0.96);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #fff;
+    opacity: 1;
+    z-index: 100;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.card-lock {
+    font-size: 1.3rem;
+    color: var(--gold);
+    animation: lockJiggle 2s infinite alternate;
+}
+
+.card-grey-screen span {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--text-gray);
+}
+
+.card-content {
+    width: 100%;
+    text-align: center;
+}
+
+.polaroid-card img {
+    width: 100%;
+    height: 140px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: #040714;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.card-quote {
+    margin-top: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: #12192c;
+    font-weight: 600;
+    text-align: center;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Close button inside polaroids, revealed only when zoomed */
+.btn-close-card {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 12px;
+    padding: 8px 22px;
+    border-radius: 30px;
+    background: linear-gradient(135deg, #ff3c70 0%, #d61347 100%);
+    color: #fff;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255, 60, 112, 0.45);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease, background 0.2s;
+}
+
+.btn-close-card:hover {
+    background: linear-gradient(135deg, #ff5c88 0%, #ff3c70 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(255, 60, 112, 0.6);
+}
+
+.polaroid-card.zoomed .btn-close-card {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.float-proceed-btn {
+    position: absolute;
+    bottom: 8%;
+    z-index: 500;
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.float-proceed-btn.visible-btn {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+
+/* ==================================================
+   STAGE 3: EMOTION CHANGER SPACE
+   ================================================== */
+.emotion-changer-card {
+    width: min(500px, 90vw);
+    padding: 50px 30px;
+    text-align: center;
+}
+
+.breathing-ring-outer {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    border: 1px solid rgba(56, 176, 255, 0.2);
+    margin: 0 auto 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.breathing-ring-inner {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(56, 176, 255, 0.85) 0%, rgba(56, 176, 255, 0.2) 100%);
+    box-shadow: 0 0 25px rgba(56, 176, 255, 0.4);
+    animation: breathingCycle 6s ease-in-out infinite alternate;
+}
+
+.emotion-prompt {
+    font-size: 1.6rem;
+    background: linear-gradient(135deg, #ffffff 0%, #b8d0ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+}
+
+.emotion-subtext {
+    font-size: 0.95rem;
+    color: var(--text-gray);
+    line-height: 1.6;
+}
+
+/* ==================================================
+   STAGE 4: EMPOWERING MOTIVATION CARD
+   ================================================== */
+.motivation-box {
+    width: min(550px, 92vw);
+    padding: 45px 35px;
+    text-align: center;
+    border-color: rgba(255, 215, 0, 0.12);
+}
+
+.motivation-glow {
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.12) 0%, transparent 70%);
+    filter: blur(15px);
+    z-index: 0;
+}
+
+.bolt-icon {
+    font-size: 2.6rem;
+    color: var(--gold);
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 0 10px rgba(255,215,0,0.5));
+}
+
+.motivation-box h2 {
+    font-size: 1.8rem;
+    color: var(--gold-bright);
+    margin-bottom: 18px;
+    position: relative;
+    z-index: 1;
+}
+
+.motivation-text-tanglish {
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: #e5e8f5;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 1;
+}
+
+.motivation-box .btn {
+    position: relative;
+    z-index: 1;
+}
+
+/* ==================================================
+   STAGE 5: STORY - SCENE 1 (BOY ON CYCLE)
+   ================================================== */
+.story-stage {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.sunset-sky {
+    position: absolute;
+    inset: 0;
+    background: transparent;
+    z-index: 0;
+}
+
+.boy-road {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 24%;
+    background: linear-gradient(180deg, #101217 0%, #030406 100%);
+    border-top: 5px solid #232730;
+    z-index: 2;
+}
+
+.boy-road::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: repeating-linear-gradient(
+        90deg,
+        #4e5461 0px,
+        #4e5461 35px,
+        transparent 35px,
+        transparent 70px
+    );
+}
+
+.boy-actor-box {
+    position: absolute;
+    bottom: 22%;
+    left: -200px;
+    width: 130px;
+    z-index: 5;
+}
+
+#actor-boy-cycle {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.7));
+}
+
+/* ==================================================
+   STAGE 6: STORY - SCENE 2 (ADULT & RESPONSIBILITIES)
+   ================================================== */
+.dark-storm-bg {
+    position: absolute;
+    inset: 0;
+    background: transparent;
+}
+
+.rain-curtain {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+
+.adult-spotlight-wrapper {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 70vh;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 5;
+}
+
+.adult-actor {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 15px 30px rgba(0,0,0,0.85)) grayscale(0.85) brightness(0.35);
+    transition: filter 1s ease;
+}
+
+.weary-shadow-glow {
+    position: absolute;
+    bottom: 0;
+    width: 250px;
+    height: 80%;
+    background: radial-gradient(ellipse at bottom, rgba(56, 176, 255, 0.08) 0%, transparent 70%);
+    filter: blur(20px);
+    z-index: -1;
+}
+
+/* Responsibility words */
+.responsibility-words-container {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    pointer-events: none;
+}
+
+.resp-word {
+    position: absolute;
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(1rem, 1.8vw, 1.45rem);
+    font-weight: 600;
+    color: #cbd2ed;
+    background: rgba(4, 7, 16, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.05);
+    padding: 8px 18px;
+    border-radius: 30px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+    opacity: 0;
+    transform: translateY(20px);
+    will-change: transform, opacity;
+}
+
+/* Position defaults */
+.resp-word.w1 { top: 22%; left: 8vw; }
+.resp-word.w2 { top: 38%; right: 8vw; }
+.resp-word.w3 { top: 58%; left: 10vw; }
+.resp-word.w4 { top: 18%; right: 30vw; }
+.resp-word.w5 { top: 52%; right: 12vw; }
+
+/* Background faint dreams */
+.bg-dreams-container {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.bg-dream {
+    position: absolute;
+    max-height: 120px;
+    object-fit: contain;
+    filter: blur(4px) grayscale(0.5);
+    opacity: 0;
+    transform: scale(0.85);
+    will-change: transform, opacity;
+}
+
+.bg-dream.bd1 { top: 12%; left: 20%; }
+.bg-dream.bd2 { top: 22%; right: 18%; }
+.bg-dream.bd3 { top: 46%; left: 35%; }
+
+/* ==================================================
+   STAGE 7: STORY - SCENE 3 (TRIUMPH & SHOWCASE)
+   ================================================== */
+.triumph-stage {
+    position: absolute;
+    inset: 0;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.golden-ray-sun {
+    position: absolute;
+    left: 50%;
+    top: 40%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.15) 0%, transparent 60%);
+    filter: blur(25px);
+    z-index: 1;
+}
+
+.success-actor-wrapper {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 72vh;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 5;
+}
+
+.triumph-actor {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 0 25px rgba(255,215,0,0.35)) drop-shadow(0 15px 30px rgba(0,0,0,0.85));
+    z-index: 2;
+}
+
+.golden-halo-sparkle {
+    position: absolute;
+    bottom: 12%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,215,0,0.28) 0%, transparent 70%);
+    filter: blur(15px);
+    z-index: 0;
+}
+
+/* Success Showcase rectangular gold frames */
+.success-showcase {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    pointer-events: none;
+}
+
+.success-bubble {
+    position: absolute;
+    border-radius: 16px;
+    background: rgba(8, 14, 32, 0.7);
+    border: 2px solid var(--gold);
+    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.25), 0 15px 35px rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    opacity: 0;
+    transform: scale(0.6);
+    will-change: transform, opacity;
+}
+
+.success-bubble img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Crops image to fill rectangular frames beautifully */
+    border-radius: 10px;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+}
+
+/* Landscape frames */
+.success-bubble.sb1,
+.success-bubble.sb2,
+.success-bubble.sb3 {
+    width: 190px;
+    height: 125px;
+}
+
+/* Portrait frame */
+.success-bubble.sb4 {
+    width: 125px;
+    height: 190px;
+}
+
+/* Grid Coordinates */
+.success-bubble.sb1 { top: 12%; left: 12vw; }
+.success-bubble.sb2 { top: 18%; right: 12vw; }
+.success-bubble.sb3 { top: 48%; left: 15vw; }
+.success-bubble.sb4 { top: 52%; right: 15vw; }
+
+/* ==================================================
+   STAGE 8: STORY - SCENE 4 (EPILOGUE CREDITS)
+   ================================================== */
+.epilogue-panel {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+}
+
+.staircase-container {
+    position: absolute;
+    width: 500px;
+    height: 380px;
+    display: block;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.staircase-steps {
+    position: absolute;
+    inset: 0;
+}
+
+.stair-step {
+    position: absolute;
+    width: 100px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+.stair-step.step-1 { bottom: 12%; left: 8%; }
+.stair-step.step-2 { bottom: 26%; left: 25%; }
+.stair-step.step-3 { bottom: 40%; left: 42%; }
+.stair-step.step-4 { bottom: 54%; left: 59%; }
+.stair-step.step-5 { bottom: 68%; left: 76%; width: 110px; }
+
+.stair-step span {
+    position: absolute;
+    top: -22px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-gray);
+    opacity: 0.45;
+    transition: color 0.3s, opacity 0.3s;
+    white-space: nowrap;
+}
+
+.stair-step.active-step {
+    background: rgba(255, 215, 0, 0.2);
+    border-color: var(--gold);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.35);
+}
+
+.stair-step.active-step span {
+    color: var(--gold-bright);
+    opacity: 1;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+}
+
+.stair-actor-box {
+    position: absolute;
+    width: 70px;
+    height: 105px;
+    z-index: 20;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.3s ease;
+}
+
+#stair-actor-raj {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 15px rgba(0,0,0,0.6));
+}
+
+.trophy-glow {
+    position: absolute;
+    top: -18px;
+    right: -18px;
+    font-size: 2.2rem;
+    color: var(--gold);
+    filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.8));
+    opacity: 0;
+    transform: scale(0.5) rotate(-20deg);
+    transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.trophy-glow.active-trophy {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+    animation: trophyFloat 2.5s ease-in-out infinite alternate;
+}
+
+.epilogue-credits {
+    position: absolute;
+    text-align: center;
+    max-width: 650px;
+    width: 90%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+}
+
+.epilogue-line {
+    opacity: 0;
+    transform: translateY(20px);
+    margin-bottom: 15px;
+}
+
+.epilogue-line.l1 {
+    font-size: clamp(1.4rem, 2.2vw, 2rem);
+    color: var(--text-gray);
+    font-weight: 300;
+}
+
+.epilogue-line.l2 {
+    font-size: clamp(1.4rem, 2.2vw, 2rem);
+    color: var(--text-muted);
+    font-weight: 300;
+}
+
+.epilogue-line.l3 {
+    font-size: clamp(2.3rem, 5vw, 4.5rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, #ffffff 0%, #ff8aba 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-top: 25px;
+    margin-bottom: 30px;
+}
+
+.pulsing-glow-heart {
+    font-size: 3.5rem;
+    color: var(--accent-red);
+    margin-bottom: 40px;
+    opacity: 0;
+    transform: scale(0.6);
+}
+
+.pulsing-glow-heart.active-heart {
+    opacity: 1;
+    transform: scale(1);
+    animation: heartbeat 1.3s infinite;
+}
+
+/* ==================================================
+   KEYFRAMES & ANIMATIONS
+   ================================================== */
+@keyframes shimmerSlide {
+    0% { left: -150%; top: -150%; }
+    100% { left: 150%; top: 150%; }
+}
+
+@keyframes errorShake {
+    0%, 100% { transform: translateX(0); }
+    15%, 45%, 75% { transform: translateX(-10px); }
+    30%, 60%, 90% { transform: translateX(10px); }
+}
+
+@keyframes lockJiggle {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    10% { transform: scale(1.15) rotate(-6deg); }
+    20% { transform: scale(1.15) rotate(6deg); }
+    30% { transform: scale(1.15) rotate(-6deg); }
+    40% { transform: scale(1.15) rotate(6deg); }
+    50% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes breathingCycle {
+    0% { transform: scale(1); opacity: 0.4; box-shadow: 0 0 15px rgba(56,176,255,0.2); }
+    100% { transform: scale(1.95); opacity: 1; box-shadow: 0 0 35px rgba(56,176,255,0.5); }
+}
+
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.08); }
+    40% { transform: scale(1.02); }
+    60% { transform: scale(1.1); }
+}
+
+@keyframes musicBounce {
+    0% { transform: scaleY(0.1); }
+    100% { transform: scaleY(1.0); }
+}
+
+@keyframes arrowPulse {
+    0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.6; }
+    50% { transform: translateX(-50%) translateY(-6px); opacity: 1; }
+}
+
+/* ==================================================
+   MOBILE DEVICES RESPONSIVENESS
+   ================================================== */
+@media (max-width: 1024px) {
+    .hud-controls {
+        top: 20px;
+        right: 20px;
+    }
+    
+    .adult-spotlight-wrapper, .success-actor-wrapper {
+        height: 60vh;
+    }
+    
+    .resp-word {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        font-size: 15px;
+    }
+    
+    .btn {
+        padding: 11px 26px;
+    }
+    
+    .welcome-box {
+        padding: 35px 20px;
+    }
+    
+    .welcome-title {
+        font-size: 2.1rem;
+    }
+    
+    /* Scattered Cards on Tablet/Mobile */
+    .polaroid-card {
+        width: 135px;
+        padding: 6px;
+    }
+    
+    .polaroid-card img {
+        height: 90px;
+    }
+    
+    .card-quote {
+        font-size: 0.68rem;
+        min-height: 42px;
+    }
+    
+    /* Cycle scene */
+    .boy-actor-box {
+        width: 95px;
+        bottom: 22%;
+    }
+    
+    /* Responsibilities mobile stacked */
+    .adult-spotlight-wrapper {
+        height: 45vh;
+        z-index: 2;
+    }
+    
+    .responsibility-words-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding-top: 12vh;
+        gap: 10px;
+        z-index: 10;
+    }
+    
+    .resp-word {
+        position: relative !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        font-size: 0.92rem;
+        padding: 6px 14px;
+        transform: translateY(15px);
+    }
+    
+    /* Faint Dreams */
+    .bg-dream {
+        max-height: 80px;
+    }
+    
+    /* Success Showcase mobile frames */
+    .success-actor-wrapper {
+        height: 50vh;
+        z-index: 2;
+    }
+    
+    .success-showcase {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        padding: 10vh 20px 0;
+        z-index: 10;
+        pointer-events: auto;
+    }
+    
+    .success-bubble {
+        position: relative !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 130px;
+        height: 85px;
+        margin: auto;
+        padding: 8px;
+    }
+    
+    .success-bubble.sb4 {
+        width: 85px;
+        height: 130px;
+    }
+    
+    .epilogue-panel {
+        position: relative;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
+    
+    .staircase-container {
+        position: absolute;
+        width: 320px;
+        height: 250px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) scale(0.9);
+        flex-shrink: 0;
+    }
+    
+    .stair-step {
+        width: 60px;
+        height: 8px;
+    }
+    
+    .stair-step.step-1 { bottom: 12%; left: 5%; }
+    .stair-step.step-2 { bottom: 26%; left: 23%; }
+    .stair-step.step-3 { bottom: 40%; left: 41%; }
+    .stair-step.step-4 { bottom: 54%; left: 59%; }
+    .stair-step.step-5 { bottom: 68%; left: 77%; width: 70px; }
+    
+    .stair-step span {
+        font-size: 0.52rem;
+        top: -18px;
+    }
+    
+    .stair-actor-box {
+        width: 50px;
+        height: 75px;
+    }
+    
+    .trophy-glow {
+        font-size: 1.6rem;
+        top: -12px;
+        right: -12px;
+    }
+    
+    .epilogue-credits {
+        position: absolute;
+        text-align: center;
+        max-width: 90%;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) scale(0.95);
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-title {
+        font-size: 1.8rem;
+    }
+    
+    .welcome-desc {
+        font-size: 0.9rem;
+    }
+    
+    .polaroid-card {
+        width: 110px;
+        padding: 5px;
+    }
+    
+    .polaroid-card img {
+        height: 70px;
+    }
+    
+    .card-quote {
+        font-size: 0.6rem;
+    }
+}
